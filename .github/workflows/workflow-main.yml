@@ -1,10 +1,16 @@
-name: Run Tests
 on:
-  push:
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      CMD_FIND_CPP:
+        type: string
+        default: $(find . \( -iname '*.cpp' \) -print)
+      CMD_FIND_HPP:
+        type: string
+        default: $(find . \( -iname '*.hpp' \) -print)
 jobs:
-  initial:
+  clang-format-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
-      - name: get list of software
-        run: apt list --installed
+      - name: clang-format check
+        run: clang-format-14 --dry-run -Werror ${{inputs.CMD_FIND_CPP}} ${{inputs.CMD_FIND_HPP}}
