@@ -12,3 +12,4 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra -Werror"
         FORCE)
 
 add_executable(flows_coursework main.cpp)
+add_executable(unit_tests doctest_main.cpp sample_tests.cpp)
