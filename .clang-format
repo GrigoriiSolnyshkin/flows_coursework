@@ -10,3 +10,4 @@ SpaceInEmptyBlock: true
 DerivePointerAlignment: true
 KeepEmptyLinesAtTheStartOfBlocks: true
 SortIncludes: CaseSensitive
+AlwaysBreakTemplateDeclarations: Yes
