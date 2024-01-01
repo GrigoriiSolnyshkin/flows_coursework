@@ -35,7 +35,7 @@ jobs:
       - name: cmake build
         run: cmake --build . --verbose
       - name: run executable
-        run: ./unit-tests
+        run: ./unit-tests-run
   run-unit-tests-asan:
     runs-on: ubuntu-latest
     timeout-minutes: 2
@@ -47,4 +47,4 @@ jobs:
       - name: cmake build tests with sanitizers
         run: cmake --build . --verbose
       - name: run executable
-        run: ./unit-tests
+        run: ./unit-tests-run
