@@ -11,5 +11,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra -Werror"
         CACHE STRING "Compiler flags in debug build"
         FORCE)
 
+include_directories(libraries/)
+
 add_executable(flows_coursework main.cpp)
-add_executable(unit_tests doctest_main.cpp sample_tests.cpp)
+add_executable(unit_tests unit-tests/doctest_main.cpp unit-tests/sample_tests.cpp)

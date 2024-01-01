@@ -3,10 +3,10 @@ on:
     inputs:
       CMD_FIND_CPP:
         type: string
-        default: $(find . \( -iname '*.cpp' \) -print)
+        default: $(find . \( -iname '*.cpp' -not -path "./unit-tests/*" \) -print)
       CMD_FIND_HPP:
         type: string
-        default: $(find . \( -iname '*.hpp' \) -print)
+        default: $(find . \( -iname '*.hpp' -not -path "./unit-tests/*" \) -print)
 jobs:
   clang-format-check:
     runs-on: ubuntu-latest
