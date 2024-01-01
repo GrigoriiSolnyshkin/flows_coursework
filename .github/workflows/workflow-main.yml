@@ -12,5 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
+      - name: download repo
+        uses: actions/checkout@v3
       - name: clang-format check
         run: clang-format-14 --dry-run -Werror ${{inputs.CMD_FIND_CPP}} ${{inputs.CMD_FIND_HPP}}
