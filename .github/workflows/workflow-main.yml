@@ -1,0 +1,50 @@
+on:
+  workflow_call:
+    inputs:
+      CMD_FIND_CPP:
+        type: string
+        default: $(find . \( -iname '*.cpp' -not -path "./unit-tests/*" \) -print)
+      CMD_FIND_HPP:
+        type: string
+        default: $(find . \( -iname '*.hpp' -not -path "./unit-tests/*" \) -print)
+jobs:
+  clang-format-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: download repo
+        uses: actions/checkout@v3
+      - name: clang-format check
+        run: clang-format-14 --dry-run -Werror ${{inputs.CMD_FIND_CPP}} ${{inputs.CMD_FIND_HPP}}
+  clang-tidy-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: download repo
+        uses: actions/checkout@v3
+      - name: clang-tidy check
+        run: clang-tidy-14 ${{inputs.CMD_FIND_CPP}} ${{inputs.CMD_FIND_HPP}}
+  run-unit-tests-debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: download repo
+        uses: actions/checkout@v3
+      - name: cmake
+        run: cmake .
+      - name: cmake build
+        run: cmake --build . --verbose
+      - name: run executable
+        run: ./unit-tests-run
+  run-unit-tests-asan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: download repo
+        uses: actions/checkout@v3
+      - name: cmake
+        run: cmake . -D CMAKE_BUILD_TYPE=ASAN
+      - name: cmake build tests with sanitizers
+        run: cmake --build . --verbose
+      - name: run executable
+        run: ./unit-tests-run
