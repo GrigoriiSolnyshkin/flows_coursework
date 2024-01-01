@@ -110,6 +110,11 @@ class link_cut {
     [[nodiscard]] std::size_t size() const {
         return nodes_m.size() - 1;
     }
+
+    void init() {
+        nodes_m.assign(nodes_m.size(), splay_node{});
+        nodes_m[0].subtree_size = 0;
+    }
 };
 
 } // namespace link_cut
