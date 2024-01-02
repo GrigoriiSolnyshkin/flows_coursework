@@ -31,7 +31,7 @@ jobs:
       - name: download repo
         uses: actions/checkout@v3
       - name: cmake
-        run: cmake .
+        run: cmake . -D CMAKE_BUILD_TYPE=Debug
       - name: cmake build
         run: cmake --build . --verbose
       - name: run executable

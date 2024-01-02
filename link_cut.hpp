@@ -1,8 +1,8 @@
 #ifndef FLOWS_COURSEWORK_LINK_CUT_HPP
 #define FLOWS_COURSEWORK_LINK_CUT_HPP
 
-#include <vector>
 #include <optional>
+#include <vector>
 
 namespace flows_coursework {
 
@@ -95,8 +95,7 @@ class link_cut {
 
     template <child_type CHILD_TYPE>
     void splay_step(vertex_t node, vertex_t parent) {
-        if (auto parent_parent = get_parent(parent);
-            parent_parent == NO_VERTEX) {
+        if (auto parent_parent = get_parent(parent); parent_parent == NO_VERTEX) {
 
             zig<CHILD_TYPE>(node);
         } else if (parent == get_child<CHILD_TYPE>(parent_parent)) {
