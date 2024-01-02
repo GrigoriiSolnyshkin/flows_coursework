@@ -6,7 +6,7 @@
 
 using flows_coursework::link_cut::link_cut;
 
-std::mt19937 generator{42};
+std::mt19937 generator{42}; //NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 TEST_CASE("depths and roots test") {
     link_cut<int64_t> lc(100);
@@ -154,5 +154,35 @@ TEST_CASE("big path random test") {
     std::shuffle(order.begin(), order.end(), generator);
     for (int i = 0; i < 999'999; ++i) {
         lc.cut(order[i]);
+    }
+}
+
+TEST_CASE("lca tests") {
+    link_cut<int64_t> lc(128);
+    for (int i = 2; i < 128; ++i) {
+        lc.link(i, i / 2);
+    }
+
+    for (int i_pow = 0; i_pow < 7; ++i_pow) {
+        for (int i = 1 << i_pow; i < (1 << (i_pow + 1)); ++i) {
+            for (int j_pow = 0; j_pow < 7; ++j_pow) {
+                for (int j = 1 << j_pow; j < (1 << (j_pow + 1)); ++j) {
+                    int i_copy = i;
+                    int j_copy = j;
+                    if (i_pow > j_pow) {
+                        i_copy >>= (i_pow - j_pow);
+                    } else {
+                        j_copy >>= (j_pow - i_pow);
+                    }
+
+                    while (i_copy != j_copy) {
+                        i_copy >>= 1;
+                        j_copy >>= 1;
+                    }
+
+                    CHECK_EQ(lc.link_cut_lca(i, j), i_copy);
+                }
+            }
+        }
     }
 }

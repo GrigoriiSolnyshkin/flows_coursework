@@ -136,7 +136,7 @@ class link_cut {
         update(node);
     }
 
-    void expose(vertex_t node) {
+    vertex_t expose(vertex_t node) {
         splay(node);
         expose_remove_child(node);
 
@@ -149,6 +149,7 @@ class link_cut {
 
             node = next_node;
         }
+        return node;
     }
 
   public:
@@ -210,6 +211,13 @@ class link_cut {
         splay(node);
 
         return nodes_m[node].subtree_size - 1;
+    }
+
+    [[nodiscard]] vertex_t link_cut_lca(vertex_t node, vertex_t other) {
+        ++node;
+        ++other;
+        expose(node);
+        return expose(other) - 1;
     }
 };
 
