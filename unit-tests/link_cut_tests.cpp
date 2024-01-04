@@ -3,6 +3,7 @@
 #include <doctest.h>
 #include <random>
 #include <algorithm>
+#include <utility>
 
 using flows_coursework::link_cut::link_cut;
 
@@ -15,7 +16,7 @@ TEST_CASE("depths and roots test") {
         if (i % 10 == 0) {
             continue;
         }
-        lc.link(i, i / 10 * 10);
+        lc.link_cut_link(i, i / 10 * 10);
     }
 
     for (int i = 0; i < 100; ++i) {
@@ -36,7 +37,7 @@ TEST_CASE("depths and roots test") {
         if (i % 10 == 0) {
             continue;
         }
-        lc.link(i, i - 1);
+        lc.link_cut_link(i, i - 1);
     }
 
     for (int i = 0; i < 100; ++i) {
@@ -48,7 +49,7 @@ TEST_CASE("depths and roots test") {
 TEST_CASE("link cut parents test") {
     link_cut<int64_t> lc(100);
     for (int i = 1; i < 100; ++i) {
-        lc.link(i, i - 1);
+        lc.link_cut_link(i, i - 1);
     }
     CHECK_EQ(lc.link_cut_parent(0), std::nullopt);
     for (int i = 1; i < 100; ++i) {
@@ -58,7 +59,7 @@ TEST_CASE("link cut parents test") {
     }
 
     for (int i = 5; i < 100; i += 5) {
-        lc.cut(i);
+        lc.link_cut_cut(i);
     }
 
     for (int i = 0; i < 100; ++i) {
@@ -78,7 +79,7 @@ TEST_CASE("binary tree test") {
     link_cut<int64_t> lc(128);
 
     for (int i = 2; i < 128; ++i) {
-        lc.link(i, i / 2);
+        lc.link_cut_link(i, i / 2);
     }
 
     for (int i = 1; i < 128; ++i) {
@@ -92,7 +93,7 @@ TEST_CASE("binary tree test") {
     }
 
     for (int j = 16; j < 32; ++j) {
-        lc.cut(j);
+        lc.link_cut_cut(j);
     }
 
     for (int i = 4; i < 7; ++i) {
@@ -103,7 +104,7 @@ TEST_CASE("binary tree test") {
     }
 
     for (int j = 16; j < 32; ++j) {
-        lc.link(j, 1);
+        lc.link_cut_link(j, 1);
     }
 
     for (int i = 0; i < 7; ++i) {
@@ -118,7 +119,7 @@ TEST_CASE("big path test") {
     link_cut<int64_t> lc(1'000'000);
 
     for (int i = 1; i < 1'000'000; ++i) {
-        lc.link(i, i - 1);
+        lc.link_cut_link(i, i - 1);
     }
 
     for (int i = 0; i < 1'000'000; ++i) {
@@ -127,7 +128,7 @@ TEST_CASE("big path test") {
     }
 
     for (int i = 1; i < 1'000'000; ++i) {
-        lc.cut(i);
+        lc.link_cut_cut(i);
     }
 }
 
@@ -138,7 +139,7 @@ TEST_CASE("big path random test") {
 
     std::shuffle(order.begin(), order.end(), generator);
     for (int i = 0; i < 999'999; ++i) {
-        lc.link(order[i], order[i] - 1);
+        lc.link_cut_link(order[i], order[i] - 1);
     }
 
     std::shuffle(order.begin(), order.end(), generator);
@@ -153,14 +154,14 @@ TEST_CASE("big path random test") {
 
     std::shuffle(order.begin(), order.end(), generator);
     for (int i = 0; i < 999'999; ++i) {
-        lc.cut(order[i]);
+        lc.link_cut_cut(order[i]);
     }
 }
 
 TEST_CASE("lca tests") {
     link_cut<int64_t> lc(128);
     for (int i = 2; i < 128; ++i) {
-        lc.link(i, i / 2);
+        lc.link_cut_link(i, i / 2);
     }
 
     for (int i_pow = 0; i_pow < 7; ++i_pow) {
@@ -186,3 +187,164 @@ TEST_CASE("lca tests") {
         }
     }
 }
+
+TEST_CASE("test ops add and get") {
+    link_cut<int64_t> lc(128);
+
+    for (int i = 2; i < 128; ++i) {
+        lc.link_cut_link(i, i / 2);
+    }
+
+    for (int i = 0; i < 128; ++i) {
+        lc.link_cut_add(i, i);
+    }
+
+    for (int i = 0; i < 128; ++i) {
+        CHECK_EQ(lc.link_cut_get(i), i);
+    }
+
+    lc.init();
+
+    for (int i = 1; i < 128; ++i) {
+        lc.link_cut_link(i, i - 1);
+        lc.link_cut_add(i, i);
+    }
+
+    lc.link_cut_cut(64);
+
+    for (int i = 0; i < 128; ++i) {
+        CHECK_EQ(lc.link_cut_get(i), i);
+    }
+}
+
+TEST_CASE("test ops add on path") {
+    link_cut<int64_t> lc(128);
+
+    for (int i = 2; i < 128; ++i) {
+        lc.link_cut_link(i, i / 2);
+    }
+
+    for (int i = 64; i < 128; ++i) {
+        lc.link_cut_add_on_path(i, 1);
+    }
+
+    for (int j = 0; j < 7; ++j) {
+        for (int i = (1 << j); i < (1 << (j + 1)); ++i) {
+            CHECK_EQ(lc.link_cut_get(i), 1 << (6 - j));
+        }
+    }
+
+    lc.init();
+
+    for (int i = 0; i < 128; ++i) {
+        if (i % 16) {
+            lc.link_cut_link(i, i / 16 * 16);
+        }
+    }
+
+    for (int i = 0; i < 128; ++i) {
+        lc.link_cut_add_on_path(i, 1);
+    }
+
+    for (int i = 0; i < 128; ++i) {
+        CHECK_EQ(lc.link_cut_get(i), i % 16 == 0 ? 16 : 1);
+    }
+
+    lc.init();
+
+    lc.link_cut_add_on_path(0, 1);
+    for (int i = 1; i < 128; ++i) {
+        lc.link_cut_link(i, i - 1);
+        lc.link_cut_add_on_path(i, 1);
+    }
+
+    for (int i = 0; i < 128; ++i) {
+        CHECK_EQ(lc.link_cut_get(i), 128 - i);
+    }
+}
+
+TEST_CASE("test ops get on path") {
+    link_cut<int64_t> lc(128);
+
+    for (int i = 0; i < 128; ++i) {
+        lc.link_cut_add(i, i);
+    }
+
+    for (int i = 0; i < 128; ++i) {
+        if (i % 16) {
+            lc.link_cut_link(i, i - 1);
+        }
+    }
+
+    for (int i = 128; i--;) {
+        auto result = lc.link_cut_get_min_on_path(i);
+        CHECK_EQ(result.first, i / 16 * 16);
+        CHECK_EQ(result.second, i / 16 * 16);
+    }
+
+    for (int i = 8; i < 128; i += 16) {
+        lc.link_cut_cut(i);
+    }
+
+    for (int i = 0; i < 128; ++i) {
+        auto result = lc.link_cut_get_min_on_path(i);
+        CHECK_EQ(result.first, i / 8 * 8);
+        CHECK_EQ(result.second, i / 8 * 8);
+    }
+
+    for (int i = 8; i < 128; i += 16) {
+        lc.link_cut_add_on_path(i - 1, 16);
+        lc.link_cut_link(i, i - 1);
+    }
+
+    for (int i = 0; i < 128; ++i) {
+        CHECK_EQ(lc.link_cut_get(i), i & 8 ? i : i + 16);
+    }
+
+    for (int i = 0; i < 128; ++i) {
+        auto result = lc.link_cut_get_min_on_path(i);
+        CHECK_EQ(result.first, i / 8 * 8);
+        CHECK_EQ(result.second, i & 8 ? i / 8 * 8 : i / 8 * 8 + 16);
+    }
+}
+
+TEST_CASE("test ops random path test") {
+    link_cut<int64_t> lc(1000);
+
+    std::vector<int64_t> data(1000);
+
+    for (int i = 0; i < 1000; ++i) {
+        int64_t entry = std::uniform_int_distribution<int64_t>(0, 999)(generator);
+        lc.link_cut_add(i, entry);
+        data[i] = entry;
+        if (i) {
+            lc.link_cut_link(i, i - 1);
+        }
+    }
+
+    for (int lo = 0; lo < 1000; ++lo) {
+
+        if (lo) {
+            lc.link_cut_cut(lo);
+        }
+
+        int64_t min_entry = data[lo];
+        std::size_t argmin_entry = lo;
+
+        for (int hi = lo; hi < 1000; ++hi) {
+            if (data[hi] < min_entry) {
+                min_entry = data[hi];
+                argmin_entry = hi;
+            }
+
+            auto result = lc.link_cut_get_min_on_path(hi);
+            CHECK_EQ(result.first, argmin_entry);
+            CHECK_EQ(result.second, min_entry);
+        }
+
+        if (lo) {
+            lc.link_cut_link(lo, lo - 1);
+        }
+    }
+}
+
