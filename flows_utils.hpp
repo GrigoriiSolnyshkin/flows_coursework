@@ -13,11 +13,10 @@ template <typename DataType>
 struct flow_edge : capacity_edge<DataType> {
     DataType flow_value{};
 
-    flow_edge(const capacity_edge<DataType> &base) :
-          capacity_edge<DataType>(base) {
+    flow_edge(const capacity_edge<DataType> &base) : capacity_edge<DataType>(base) {
     }
 
-    flow_edge(): capacity_edge<DataType>() {
+    flow_edge() : capacity_edge<DataType>() {
     }
 };
 
@@ -26,14 +25,15 @@ struct flow_graph {
 
     using edge_t = flow_edge<DataType>;
     using edge_p = flow_edge<DataType> *;
+
   private:
     vertex_t source_m;
     vertex_t target_m;
     std::vector<std::vector<edge_p>> graph_m;
     std::size_t n_edges_m{};
     edge_p edges_buf_m{};
-  public:
 
+  public:
     [[nodiscard]] static DataType may_push(vertex_t u, const edge_t &edge) {
         return u == edge.from ? edge.capacity - edge.flow_value : edge.flow_value;
     }
@@ -78,14 +78,9 @@ struct flow_graph {
         return target_m;
     }
 
-    flow_graph(std::size_t n_vertices,
-               vertex_t source,
-               vertex_t target,
-               const std::vector<capacity_edge<DataType>> &edges) :
-          source_m(source),
-          target_m(target),
-          graph_m(n_vertices),
-          n_edges_m(edges.size()),
+    flow_graph(std::size_t n_vertices, vertex_t source, vertex_t target,
+               const std::vector<capacity_edge<DataType>> &edges)
+        : source_m(source), target_m(target), graph_m(n_vertices), n_edges_m(edges.size()),
           edges_buf_m(new edge_t[edges.size()]) {
 
         for (std::size_t i = 0; i < n_edges_m; ++i) {
@@ -102,21 +97,17 @@ struct flow_graph {
 
     flow_graph(flow_graph &&) noexcept = default;
 
-    flow_graph(const flow_graph &other):
-          source_m(other.source_m),
-          target_m(other.target_m),
-          graph_m(other.size()),
-          n_edges_m(other.n_edges_m),
-          edges_buf_m(new edge_t[other.n_edges_m]) {
+    flow_graph(const flow_graph &other)
+        : source_m(other.source_m), target_m(other.target_m), graph_m(other.size()),
+          n_edges_m(other.n_edges_m), edges_buf_m(new edge_t[other.n_edges_m]) {
 
         for (vertex_t i = 0; i < size(); ++i) {
             graph_m[i].reserve(other.degree(i));
         }
 
         for (vertex_t u = 0; u < size(); ++u) {
-            for (const auto edge: other.graph_m[u]) {
-                edges_buf_m[edge - other.edges_buf_m]
-                    = edge_t(*edge);
+            for (const auto edge : other.graph_m[u]) {
+                edges_buf_m[edge - other.edges_buf_m] = edge_t(*edge);
                 graph_m[u].push_back(edges_buf_m + (edge - other.edges_buf_m));
             }
         }
@@ -139,7 +130,7 @@ struct flow_graph {
     }
 };
 
-}
-}
+} // namespace flows_utils
+} // namespace flows_coursework
 
 #endif // FLOWS_COURSEWORK_FLOWS_UTILS_HPP

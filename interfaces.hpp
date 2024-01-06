@@ -14,8 +14,8 @@ struct capacity_edge {
     vertex_t to{};
     DataType capacity{};
 
-    capacity_edge(vertex_t from, vertex_t to, DataType capacity):
-          from(from), to(to), capacity(capacity) {
+    capacity_edge(vertex_t from, vertex_t to, DataType capacity)
+        : from(from), to(to), capacity(capacity) {
     }
 
     capacity_edge() = default;
@@ -23,17 +23,12 @@ struct capacity_edge {
 
 template <typename DataType>
 struct flows_solver {
-    virtual std::vector<DataType> solve(
-        std::size_t graph_size,
-        vertex_t source, vertex_t to,
-        const std::vector<capacity_edge<DataType>> & edges
-        ) = 0;
+    virtual std::vector<DataType> solve(std::size_t graph_size, vertex_t source, vertex_t to,
+                                        const std::vector<capacity_edge<DataType>>& edges) = 0;
 
     virtual ~flows_solver() = default;
 };
 
-}
-
-
+} // namespace flows_coursework
 
 #endif // FLOWS_COURSEWORK_INTERFACES_HPP
