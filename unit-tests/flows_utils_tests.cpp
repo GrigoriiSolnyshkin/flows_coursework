@@ -1,6 +1,6 @@
+#include "../flows_utils.hpp"
 #include <cstdint>
 #include <doctest.h>
-#include "../flows_utils.hpp"
 
 using flows_coursework::capacity_edge;
 using flows_coursework::flows_utils::flow_graph;
@@ -46,7 +46,7 @@ TEST_CASE("push may push") {
     for (int u = 0; u < 99; ++u) {
         for (std::size_t i = 0; i < fg.degree(u); ++i) {
             auto &edge = fg.get_edge_by_vertex(u, i);
-            if (fg.adjacent(u, edge) == u + 1) {
+            if (fg.adjacent(u, edge) == static_cast<flows_coursework::vertex_t>(u + 1)) {
                 fg.push(u, edge, 50);
             }
             CHECK_EQ(edge.flow_value, 50);
