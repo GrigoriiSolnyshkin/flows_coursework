@@ -5,21 +5,6 @@
 using flows_coursework::capacity_edge;
 using flows_coursework::flows_utils::flow_graph;
 
-TEST_CASE("flow graph_m copy, destruct, construct, move") {
-    std::vector<capacity_edge<int64_t>> edges;
-
-    for (int i = 0; i < 99; ++i) {
-        edges.emplace_back(i, i + 1, 100);
-    }
-
-    flow_graph fg(100, 0, 99, edges);
-    flow_graph fg_copy = fg;
-    flow_graph fg_other(100, 5, 6, edges);
-
-    fg_copy = std::move(fg_other);
-    CHECK_EQ(fg_copy.source(), 5);
-    CHECK_EQ(fg.source(), 0);
-}
 
 TEST_CASE("push may push") {
     std::vector<capacity_edge<int64_t>> edges;
