@@ -12,8 +12,12 @@ using flows_coursework::flows_utils::flow_size;
 static std::mt19937 generator{42}; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 template <typename T>
-std::vector<flows_solver<T> *> all_solvers() {
-    return {new basic_dinics_solver<T>, new edmonds_solver<T>};
+std::vector<std::unique_ptr<flows_solver<T>>> all_solvers() {
+    std::vector<std::unique_ptr<flows_solver<T>>> result;
+    result.emplace_back(new basic_dinics_solver<T>);
+    result.emplace_back(new edmonds_solver<T>);
+
+    return result;
 }
 
 TEST_CASE("simple path") {
@@ -25,12 +29,11 @@ TEST_CASE("simple path") {
 
     data[500].capacity = 999;
 
-    for (auto *solver : all_solvers<int64_t>()) {
+    for (auto &solver : all_solvers<int64_t>()) {
         auto res = solver->solve(1000, 0, 999, data);
 
         CHECK_EQ(res[0], 999);
         CHECK_EQ(flow_size(0, data, res), 999);
-        delete solver;
     }
 }
 
@@ -41,13 +44,12 @@ TEST_CASE("parallel edges") {
         data.emplace_back(0, 1, i + 1);
     }
 
-    for (auto *solver : all_solvers<int64_t>()) {
+    for (auto &solver : all_solvers<int64_t>()) {
         auto res = solver->solve(2, 0, 1, data);
         for (int i = 0; i < 1000; ++i) {
             CHECK_EQ(res[i], i + 1);
         }
         CHECK_EQ(flow_size(0, data, res), 1000 * 1001 / 2);
-        delete solver;
     }
 }
 
@@ -70,11 +72,10 @@ TEST_CASE("matching") {
         data.emplace_back(i, i + n, 1);
     }
 
-    for (auto *solver : all_solvers<int64_t>()) {
+    for (auto &solver : all_solvers<int64_t>()) {
         auto res = solver->solve(2 * n + 2, s, t, data);
 
         CHECK_EQ(flow_size(s, data, res), 2 * n / 3);
-        delete solver;
     }
 }
 
@@ -102,13 +103,13 @@ TEST_CASE("bridge test") {
     }
     data.emplace_back(n / 2 - 1, n / 2, 10000);
 
-    for (auto *solver : all_solvers<int64_t>()) {
+    for (auto &solver : all_solvers<int64_t>()) {
         auto res = solver->solve(n, 0, n - 1, data);
         CHECK_EQ(flow_size(0, data, res), 10000);
     }
     data.pop_back();
     data.emplace_back(n / 2 - 1, n / 2, 10000000);
-    for (auto *solver : all_solvers<int64_t>()) {
+    for (auto &solver : all_solvers<int64_t>()) {
         auto res = solver->solve(n, 0, n - 1, data);
 
         CHECK_EQ(flow_size(0, data, res), 1000 * (n / 2 - 1));
@@ -134,10 +135,9 @@ TEST_CASE("dinics equal edmonds") {
                               std::uniform_int_distribution<int64_t>(1, 1'000'000'000)(generator));
         }
 
-        for (auto *solver : all_solvers<int64_t>()) {
+        for (auto &solver : all_solvers<int64_t>()) {
             auto res = solver->solve(n, 0, n - 1, data);
             results.push_back(flow_size(0, data, res));
-            delete solver;
         }
 
         for (std::size_t i = 1; i < results.size(); ++i) {
