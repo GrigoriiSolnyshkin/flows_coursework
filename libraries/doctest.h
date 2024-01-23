@@ -925,7 +925,7 @@ namespace doctest {
         bool no_skip;              // don't skip test cases which are marked to be skipped
         bool gnu_file_line;        // if line numbers should be surrounded with :x: and not (x):
         bool no_path_in_filenames; // if the path to files should be removed from the output
-        bool no_line_numbers;      // if source code line numbers should be omitted from the output
+        bool no_line_numbers;      // if source_m code line numbers should be omitted from the output
         bool no_debug_output;      // no output in the debug console when a debugger is attached
         bool no_skipped_summary;   // don't print "skipped" in the summary !!! UNDOCUMENTED !!!
         bool no_time_in_output;    // omit any time/timestamps from output !!! UNDOCUMENTED !!!
@@ -4364,7 +4364,7 @@ namespace {
     // for sorting tests by file/line
     bool fileOrderComparator(const TestCase* lhs, const TestCase* rhs) {
         // this is needed because MSVC gives different case for drive letters
-        // for __FILE__ when evaluated in a header and a source file
+        // for __FILE__ when evaluated in a header and a source_m file
         const int res = lhs->m_file.compare(rhs->m_file, bool(DOCTEST_MSVC));
         if(res != 0)
             return res < 0;
@@ -6114,9 +6114,9 @@ namespace {
               << Whitespace(sizePrefixDisplay*1) << "filters     tests by their name\n";
             s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "tce, --" DOCTEST_OPTIONS_PREFIX_DISPLAY "test-case-exclude=<filters>   "
               << Whitespace(sizePrefixDisplay*1) << "filters OUT tests by their name\n";
-            s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "sf,  --" DOCTEST_OPTIONS_PREFIX_DISPLAY "source-file=<filters>         "
+            s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "sf,  --" DOCTEST_OPTIONS_PREFIX_DISPLAY "source_m-file=<filters>         "
               << Whitespace(sizePrefixDisplay*1) << "filters     tests by their file\n";
-            s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "sfe, --" DOCTEST_OPTIONS_PREFIX_DISPLAY "source-file-exclude=<filters> "
+            s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "sfe, --" DOCTEST_OPTIONS_PREFIX_DISPLAY "source_m-file-exclude=<filters> "
               << Whitespace(sizePrefixDisplay*1) << "filters OUT tests by their file\n";
             s << " -" DOCTEST_OPTIONS_PREFIX_DISPLAY "ts,  --" DOCTEST_OPTIONS_PREFIX_DISPLAY "test-suite=<filters>          "
               << Whitespace(sizePrefixDisplay*1) << "filters     tests by their test suite\n";
@@ -6611,9 +6611,9 @@ void Context::parseArgs(int argc, const char* const* argv, bool withDefaults) {
     using namespace detail;
 
     // clang-format off
-    parseCommaSepArgs(argc, argv, DOCTEST_CONFIG_OPTIONS_PREFIX "source-file=",        p->filters[0]);
+    parseCommaSepArgs(argc, argv, DOCTEST_CONFIG_OPTIONS_PREFIX "source_m-file=",        p->filters[0]);
     parseCommaSepArgs(argc, argv, DOCTEST_CONFIG_OPTIONS_PREFIX "sf=",                 p->filters[0]);
-    parseCommaSepArgs(argc, argv, DOCTEST_CONFIG_OPTIONS_PREFIX "source-file-exclude=",p->filters[1]);
+    parseCommaSepArgs(argc, argv, DOCTEST_CONFIG_OPTIONS_PREFIX "source_m-file-exclude=",p->filters[1]);
     parseCommaSepArgs(argc, argv, DOCTEST_CONFIG_OPTIONS_PREFIX "sfe=",                p->filters[1]);
     parseCommaSepArgs(argc, argv, DOCTEST_CONFIG_OPTIONS_PREFIX "test-suite=",         p->filters[2]);
     parseCommaSepArgs(argc, argv, DOCTEST_CONFIG_OPTIONS_PREFIX "ts=",                 p->filters[2]);

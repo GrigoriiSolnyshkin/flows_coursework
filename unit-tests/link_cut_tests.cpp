@@ -7,7 +7,7 @@
 
 using flows_coursework::link_cut::link_cut;
 
-std::mt19937 generator{42}; //NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
+static std::mt19937 generator{42}; //NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 TEST_CASE("depths and roots test") {
     link_cut<int64_t> lc(100);

@@ -7,11 +7,12 @@
 
 namespace flows_coursework {
 
+using vertex_t = std::size_t;
+
 namespace link_cut {
 
 template <typename DataType>
 class link_cut {
-    using vertex_t = std::size_t;
     static constexpr vertex_t NO_VERTEX = 0;
     using child_type = bool;
 
