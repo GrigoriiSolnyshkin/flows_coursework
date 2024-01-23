@@ -7,6 +7,7 @@
 namespace flows_coursework {
 
 using vertex_t = std::size_t;
+using edge_index_t = std::size_t;
 
 template <typename DataType>
 struct capacity_edge {
@@ -23,8 +24,8 @@ struct capacity_edge {
 
 template <typename DataType>
 struct flows_solver {
-    virtual std::vector<DataType> solve(std::size_t graph_size, vertex_t source, vertex_t to,
-                                        const std::vector<capacity_edge<DataType>>& edges) = 0;
+    virtual std::vector<DataType> solve(std::size_t, vertex_t, vertex_t,
+                                        const std::vector<capacity_edge<DataType>> &) = 0;
 
     virtual ~flows_solver() = default;
 };

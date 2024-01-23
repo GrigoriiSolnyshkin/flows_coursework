@@ -17,4 +17,5 @@ add_executable(flows-coursework main.cpp)
 add_executable(unit-tests-run
         unit-tests/doctest_main.cpp
         unit-tests/link_cut_tests.cpp
-        unit-tests/flows_utils_tests.cpp)
+        unit-tests/flows_utils_tests.cpp
+        unit-tests/flows_tests.cpp)
