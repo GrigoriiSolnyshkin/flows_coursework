@@ -1,9 +1,11 @@
-#include "flows_utils.hpp"
-#include <deque>
-#include <memory>
-
 #ifndef FLOWS_COURSEWORK_DINICS_SOLVERS_HPP
 #define FLOWS_COURSEWORK_DINICS_SOLVERS_HPP
+
+#include "flows_utils.hpp"
+#include "link_cut.hpp"
+#include <deque>
+#include <limits>
+#include <memory>
 
 namespace flows_coursework {
 
@@ -164,7 +166,7 @@ class dinics_solver : public flows_solver<DataType> {
 
     virtual bool dfs_step() = 0;
 
-    [[nodiscard]] bool dfs_steps() {
+    [[nodiscard]] virtual bool dfs_steps() {
         update_edges_to_next_layers();
         bool res = false;
         while (dfs_step()) {
@@ -187,7 +189,7 @@ class dinics_solver : public flows_solver<DataType> {
 };
 
 template <typename DataType>
-class basic_dinics_solver : public dinics_solver<DataType> {
+class basic_dinics_solver final : public dinics_solver<DataType> {
 
     std::vector<vertex_t> path_m;
 
@@ -222,6 +224,95 @@ class basic_dinics_solver : public dinics_solver<DataType> {
         for (std::size_t i = 0; i + 1 < path_m.size(); ++i) {
             vertex_t current = path_m[i];
             this->graph_m.push(current, this->current_edge(current), max_pushable);
+        }
+
+        return true;
+    }
+};
+
+template <typename DataType>
+class linkcut_dinics_solver final : public dinics_solver<DataType> {
+    using link_cut = link_cut::link_cut<DataType>;
+
+    link_cut linkcut_m;
+    std::vector<bool> deleted_m;
+
+    void mark_deleted(vertex_t vertex) {
+        deleted_m[vertex] = true;
+        for (edge_index_t i = 0; i < this->graph_m.degree(vertex); ++i) {
+            auto& edge = this->graph_m.get_edge_by_vertex(vertex, i);
+            auto adjacent = this->graph_m.adjacent(vertex, edge);
+            if (linkcut_m.link_cut_parent(adjacent) == vertex) {
+                auto& back_edge = this->current_edge(adjacent);
+                auto initial_val = this->graph_m.may_push(adjacent, back_edge);
+                auto current_val = linkcut_m.link_cut_get(adjacent);
+
+                this->graph_m.push(adjacent, back_edge, initial_val - current_val);
+                linkcut_m.link_cut_cut(adjacent);
+            }
+        }
+    }
+
+  protected:
+    bool dfs_steps() override {
+        linkcut_m.reinit(this->graph_m.size());
+        deleted_m.assign(this->graph_m.size(), false);
+
+        return dinics_solver<DataType>::dfs_steps();
+    }
+
+    bool dfs_step() override {
+        vertex_t vertex = this->graph_m.source();
+
+        while (vertex != this->graph_m.target()) {
+            if (linkcut_m.link_cut_parent(vertex).has_value()) {
+                vertex = linkcut_m.link_cut_root(vertex);
+            } else if (this->iteration_finished(vertex)) {
+                if (vertex == this->graph_m.source()) {
+                    for (vertex_t i = 0; i < this->graph_m.size(); ++i) {
+                        if (linkcut_m.link_cut_parent(i).has_value()) {
+                            auto& edge = this->current_edge(i);
+                            this->graph_m.push(i, edge,
+                                               this->graph_m.may_push(i, edge) -
+                                                   linkcut_m.link_cut_get(i));
+                        }
+                    }
+                    return false;
+                } else {
+                    mark_deleted(vertex);
+                    vertex = this->graph_m.source();
+                }
+            } else {
+                auto& edge = this->current_edge(vertex);
+                vertex_t adjacent = this->graph_m.adjacent(vertex, edge);
+                DataType may_push = this->graph_m.may_push(vertex, edge);
+                if (!may_push || deleted_m[adjacent]) {
+                    this->iterate(vertex);
+                } else {
+                    linkcut_m.link_cut_link(vertex, adjacent);
+                    linkcut_m.link_cut_set(vertex, may_push);
+                    vertex = adjacent;
+                }
+            }
+        }
+
+        linkcut_m.link_cut_set(this->graph_m.target(), std::numeric_limits<DataType>::max());
+
+        auto min_entry = linkcut_m.link_cut_get_min_on_path(this->graph_m.source());
+        auto min_val = min_entry.second;
+        auto min_argval = min_entry.first;
+
+        linkcut_m.link_cut_add_on_path(this->graph_m.source(), -min_val);
+        min_val = 0;
+        while (min_val == 0 && min_argval != this->graph_m.target()) {
+            linkcut_m.link_cut_cut(min_argval);
+            auto& edge = this->current_edge(min_argval);
+            vertex_t adjacent = this->graph_m.adjacent(min_argval, edge);
+
+            this->graph_m.push(min_argval, edge, this->graph_m.may_push(min_argval, edge));
+            min_entry = linkcut_m.link_cut_get_min_on_path(adjacent);
+            min_val = min_entry.second;
+            min_argval = min_entry.first;
         }
 
         return true;
