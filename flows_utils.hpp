@@ -2,6 +2,7 @@
 #define FLOWS_COURSEWORK_FLOWS_UTILS_HPP
 
 #include "interfaces.hpp"
+#include <cstdint>
 
 namespace flows_coursework {
 
@@ -116,6 +117,42 @@ DataType flow_size(vertex_t source, const std::vector<capacity_edge<DataType>> &
         }
     }
     return res;
+}
+
+inline std::vector<capacity_edge<int64_t>> akc_test(int n) {
+    std::vector<capacity_edge<int64_t>> data;
+
+    for (int i = 0; i < n; ++i)
+    {
+        data.emplace_back(i + 2, i + 3, n - i + 1);
+        data.emplace_back(i + 2, n + 3, 1);
+    }
+
+    data.emplace_back(n + 2, 2 * n + 3, 1);
+    data.emplace_back(n + 2, n + 3, 1);
+
+    for (int i = n + 2; i <= 2 * n + 1; ++i) {
+        data.emplace_back(i + 1, i + 2, n + 1);
+    }
+
+
+    int d = 2 * n + 4;
+
+    for (int i = d - 1; i <= 2 * n + d - 1; ++i) {
+        data.emplace_back(i + 1, i + 2, n);
+    }
+
+    for (int i = 0; i < n; ++i) {
+        data.emplace_back(i + d, 2 * n + 1 - i + d, 1);
+    }
+
+
+    data.emplace_back(0, 2, 1000000);
+    data.emplace_back(0, d, 1000000);
+    data.emplace_back(d - 1, 1, 1000000);
+    data.emplace_back(4 * n + 5, 1, 1000000);
+
+    return data;
 }
 
 } // namespace flows_utils

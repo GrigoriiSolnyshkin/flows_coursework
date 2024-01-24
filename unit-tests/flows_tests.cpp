@@ -156,7 +156,10 @@ void test_all_edges(int n) {
     std::vector<capacity_edge<int64_t>> data;
 
     for (int u = 0; u < n; ++u) {
-        for (int v = 0; v < u; ++v) {
+        for (int v = 0; v < n; ++v) {
+            if (v == u) {
+                continue;
+            }
             data.emplace_back(u, v,
                               std::uniform_int_distribution<int64_t>(1, 1'000'000'000)(generator));
         }
@@ -196,40 +199,11 @@ TEST_CASE("akc hard maxflow test") {
     int n = 200;
 
     int sz = 4 * n + 6;
-    std::vector<capacity_edge<int64_t>> data;
+
     int s = 0;
     int t = 1;
 
-    for (int i = 0; i < n; ++i)
-    {
-        data.emplace_back(i + 2, i + 3, n - i + 1);
-        data.emplace_back(i + 2, n + 3, 1);
-    }
-
-    data.emplace_back(n + 2, 2 * n + 3, 1);
-    data.emplace_back(n + 2, n + 3, 1);
-
-    for (int i = n + 2; i <= 2 * n + 1; ++i) {
-        data.emplace_back(i + 1, i + 2, n + 1);
-    }
-
-
-    int d = 2 * n + 4;
-
-    for (int i = d - 1; i <= 2 * n + d - 1; ++i) {
-        data.emplace_back(i + 1, i + 2, n);
-    }
-
-    for (int i = 0; i < n; ++i) {
-        data.emplace_back(i + d, 2 * n + 1 - i + d, 1);
-    }
-
-
-    data.emplace_back(0, 2, 1000000);
-    data.emplace_back(0, d, 1000000);
-    data.emplace_back(d - 1, 1, 1000000);
-    data.emplace_back(4 * n + 5, 1, 1000000);
-
+    auto data = flows_coursework::flows_utils::akc_test(n);
     auto res = check_solvers_coincide(sz, s, t, data, all_solvers<int64_t>());
     CHECK_EQ(res, 2 * n + 3);
 }
