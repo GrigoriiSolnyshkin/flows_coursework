@@ -8,7 +8,7 @@
 
 using solver_t = flows_coursework::flows_solver<int64_t>;
 
-int main(int argc, char *argv[]) {
+int main([[maybe_unused]] int argc, char *argv[]) {
     std::string mode = argv[1];
 
     std::mt19937 generator{42};

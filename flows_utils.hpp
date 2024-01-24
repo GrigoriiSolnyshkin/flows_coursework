@@ -122,8 +122,7 @@ DataType flow_size(vertex_t source, const std::vector<capacity_edge<DataType>> &
 inline std::vector<capacity_edge<int64_t>> akc_test(int n) {
     std::vector<capacity_edge<int64_t>> data;
 
-    for (int i = 0; i < n; ++i)
-    {
+    for (int i = 0; i < n; ++i) {
         data.emplace_back(i + 2, i + 3, n - i + 1);
         data.emplace_back(i + 2, n + 3, 1);
     }
