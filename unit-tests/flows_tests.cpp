@@ -21,6 +21,23 @@ std::vector<std::unique_ptr<flows_solver<T>>> all_solvers() {
     return result;
 }
 
+
+template <typename T>
+T check_solvers_coincide(std::size_t n, std::size_t s, std::size_t t,
+                            const std::vector<capacity_edge<T>> &data,
+                            const std::vector<std::unique_ptr<flows_solver<T>>> &solvers) {
+
+    std::vector<T> results;
+    for (auto &solver : solvers) {
+        results.push_back(flow_size(s, data, solver->solve(n, s, t, data)));
+    }
+
+    for (std::size_t i = 1; i < results.size(); ++i) {
+        CHECK_EQ(results[i - 1], results[i]);
+    }
+    return results[0];
+}
+
 TEST_CASE("simple path") {
     std::vector<capacity_edge<int64_t>> data;
 
@@ -117,20 +134,6 @@ TEST_CASE("bridge test") {
     }
 }
 
-template <typename T>
-void check_solvers_coincide(std::size_t n, std::size_t s, std::size_t t,
-                            const std::vector<capacity_edge<T>> &data,
-                            const std::vector<std::unique_ptr<flows_solver<T>>> &solvers) {
-
-    std::vector<T> results;
-    for (auto &solver : solvers) {
-        results.push_back(flow_size(s, data, solver->solve(n, s, t, data)));
-    }
-
-    for (std::size_t i = 1; i < results.size(); ++i) {
-        CHECK_EQ(results[i - 1], results[i]);
-    }
-}
 
 void test_random_edges(int n, int m) {
     std::vector<capacity_edge<int64_t>> data;
@@ -187,4 +190,46 @@ TEST_CASE("all algorithms coincide on all edges") {
     while (iterations--) {
         test_all_edges(n);
     }
+}
+
+TEST_CASE("akc hard maxflow test") {
+    int n = 200;
+
+    int sz = 4 * n + 6;
+    std::vector<capacity_edge<int64_t>> data;
+    int s = 0;
+    int t = 1;
+
+    for (int i = 0; i < n; ++i)
+    {
+        data.emplace_back(i + 2, i + 3, n - i + 1);
+        data.emplace_back(i + 2, n + 3, 1);
+    }
+
+    data.emplace_back(n + 2, 2 * n + 3, 1);
+    data.emplace_back(n + 2, n + 3, 1);
+
+    for (int i = n + 2; i <= 2 * n + 1; ++i) {
+        data.emplace_back(i + 1, i + 2, n + 1);
+    }
+
+
+    int d = 2 * n + 4;
+
+    for (int i = d - 1; i <= 2 * n + d - 1; ++i) {
+        data.emplace_back(i + 1, i + 2, n);
+    }
+
+    for (int i = 0; i < n; ++i) {
+        data.emplace_back(i + d, 2 * n + 1 - i + d, 1);
+    }
+
+
+    data.emplace_back(0, 2, 1000000);
+    data.emplace_back(0, d, 1000000);
+    data.emplace_back(d - 1, 1, 1000000);
+    data.emplace_back(4 * n + 5, 1, 1000000);
+
+    auto res = check_solvers_coincide(sz, s, t, data, all_solvers<int64_t>());
+    CHECK_EQ(res, 2 * n + 3);
 }
