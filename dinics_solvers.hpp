@@ -102,16 +102,16 @@ template <typename DataType>
 class dinics_solver : public flows_solver<DataType> {
     using flow_graph = flows_utils::flow_graph<DataType>;
 
-    std::vector<std::vector<edge_index_t>> next_edge_indices_m;
+
     std::vector<std::size_t> next_edge_iterators_m;
     std::vector<vertex_t> path_m;
     std::vector<std::size_t> distances_m;
     std::deque<vertex_t> vertex_queue_m;
 
   protected:
+    std::vector<std::vector<edge_index_t>> next_edge_indices_m;
     flow_graph graph_m;
 
-  private:
     void update_edges_to_next_layers() {
         const std::size_t size = graph_m.size();
         bool target_encountered = false;
@@ -150,7 +150,6 @@ class dinics_solver : public flows_solver<DataType> {
         }
     }
 
-  protected:
     [[nodiscard]] flows_utils::flow_edge<DataType>& current_edge(vertex_t node) {
         return graph_m.get_edge_by_vertex(node,
                                           next_edge_indices_m[node][next_edge_iterators_m[node]]);
@@ -189,7 +188,7 @@ class dinics_solver : public flows_solver<DataType> {
 };
 
 template <typename DataType>
-class basic_dinics_solver final : public dinics_solver<DataType> {
+class basic_dinics_solver : public dinics_solver<DataType> {
 
     std::vector<vertex_t> path_m;
 
@@ -228,6 +227,55 @@ class basic_dinics_solver final : public dinics_solver<DataType> {
 
         return true;
     }
+};
+
+template <typename DataType>
+class scaled_dinics_solver final : public basic_dinics_solver<DataType> {
+    DataType threshold_m = 1;
+
+    void clear_indices() {
+        for (vertex_t vertex = 0; vertex < this->graph_m.size(); ++vertex) {
+            for (edge_index_t i = 0; i < this->next_edge_indices_m[vertex].size();) {
+                const auto &edge = this->graph_m.get_edge_by_vertex(
+                    vertex, this->next_edge_indices_m[vertex][i]);
+                auto may_push = this->graph_m.may_push(vertex, edge);
+
+                if (may_push >= threshold_m) {
+                    ++i;
+                } else {
+                    std::swap(this->next_edge_indices_m[vertex][i],
+                              this->next_edge_indices_m[vertex].back());
+                    this->next_edge_indices_m[vertex].pop_back();
+                }
+            }
+        }
+    }
+
+  protected:
+    [[nodiscard]] bool dfs_steps() override {
+        if (threshold_m == 0) {
+            return false;
+        }
+        this->update_edges_to_next_layers();
+        clear_indices();
+        bool result = false;
+        while (this->dfs_step()) {
+            result = true;
+        }
+        if (!result) {
+            threshold_m /= 2;
+        }
+        return true;
+    }
+
+    std::vector<DataType> solve(std::size_t graph_size, vertex_t source, vertex_t target,
+                                const std::vector<capacity_edge<DataType>>& edges) override {
+        for (const auto &edge: edges) {
+            threshold_m = std::max(threshold_m, edge.capacity);
+        }
+        return dinics_solver<DataType>::solve(graph_size, source, target, edges);
+    }
+
 };
 
 template <typename DataType>

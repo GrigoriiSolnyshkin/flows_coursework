@@ -65,6 +65,9 @@ int main([[maybe_unused]] int argc, char *argv[]) {
         } else if (algo == "linkcut") {
             solver = std::unique_ptr<solver_t>(
                 new flows_coursework::dinics_solvers::linkcut_dinics_solver<int64_t>);
+        } else if (algo == "scaled-dinics") {
+            solver = std::unique_ptr<solver_t>(
+                new flows_coursework::dinics_solvers::scaled_dinics_solver<int64_t>);
         }
 
         std::string method = argv[3];

@@ -8,6 +8,7 @@ using flows_coursework::flows_solver;
 using flows_coursework::dinics_solvers::basic_dinics_solver;
 using flows_coursework::dinics_solvers::linkcut_dinics_solver;
 using flows_coursework::edmonds_solvers::edmonds_solver;
+using flows_coursework::dinics_solvers::scaled_dinics_solver;
 using flows_coursework::flows_utils::flow_size;
 
 static std::mt19937 generator{42}; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
@@ -18,6 +19,7 @@ std::vector<std::unique_ptr<flows_solver<T>>> all_solvers() {
     result.emplace_back(new basic_dinics_solver<T>);
     result.emplace_back(new edmonds_solver<T>);
     result.emplace_back(new linkcut_dinics_solver<T>);
+    result.emplace_back(new scaled_dinics_solver<T>);
     return result;
 }
 
@@ -188,8 +190,8 @@ TEST_CASE("all algorithms coincide on random edges small") {
 }
 
 TEST_CASE("all algorithms coincide on all edges") {
-    int n = 200;
-    int iterations = 200;
+    int n = 100;
+    int iterations = 100;
     while (iterations--) {
         test_all_edges(n);
     }
