@@ -308,7 +308,7 @@ TEST_CASE("test ops get on path") {
     }
 }
 
-TEST_CASE("test ops random path test") {
+TEST_CASE("test ops random path test with add") {
     link_cut<int64_t> lc(1000);
 
     std::vector<int64_t> data(1000);
@@ -344,6 +344,134 @@ TEST_CASE("test ops random path test") {
 
         if (lo) {
             lc.link_cut_link(lo, lo - 1);
+        }
+    }
+}
+
+
+TEST_CASE("test ops random path test with set") {
+    link_cut<int64_t> lc(1000);
+
+    std::vector<int64_t> data(1000);
+
+    for (int i = 0; i < 1000; ++i) {
+        int64_t entry = std::uniform_int_distribution<int64_t>(0, 999)(generator);
+        lc.link_cut_set(i, entry);
+        data[i] = entry;
+        if (i < 999) {
+            lc.link_cut_link(i, i + 1);
+        }
+    }
+
+    for (int hi = 0; hi < 1000; ++hi) {
+
+        if (hi < 999) {
+            lc.link_cut_cut(hi);
+        }
+
+        int64_t min_entry = data[hi];
+        std::size_t argmin_entry = hi;
+
+        for (int lo = hi; lo >= 0; --lo) {
+            if (data[lo] < min_entry) {
+                min_entry = data[lo];
+                argmin_entry = lo;
+            }
+
+            auto result = lc.link_cut_get_min_on_path(lo);
+            CHECK_EQ(result.first, argmin_entry);
+            CHECK_EQ(result.second, min_entry);
+        }
+
+        if (hi < 999) {
+            lc.link_cut_link(hi, hi + 1);
+        }
+    }
+}
+
+TEST_CASE("stress on path") {
+    std::vector<int32_t> data(100);
+    link_cut<int32_t> lc(100);
+
+    std::uniform_int_distribution<std::size_t> vert_distribution(0, 99);
+    std::uniform_int_distribution<int32_t> val_distribution(0, 9);
+    std::uniform_int_distribution<int> op_distribution(0, 4);
+
+
+    for (int i = 0; i < 99; ++i) {
+        lc.link_cut_link(i, i + 1);
+    }
+    for (int i = 0; i < 100; ++i) {
+
+        data[i] = val_distribution(generator);
+        lc.link_cut_set(i, data[i]);
+    }
+
+    for (int j = 0; j < 1'000'000; ++j) {
+        switch (op_distribution(generator)) {
+        case 0: { // set
+            std::size_t vert = vert_distribution(generator);
+            int32_t val = val_distribution(generator);
+            data[vert] = val;
+            lc.link_cut_set(vert, val);
+            break;
+        }
+        case 1: { // add
+            std::size_t vert = vert_distribution(generator);
+            int32_t val = val_distribution(generator);
+            data[vert] += val;
+            lc.link_cut_add(vert, val);
+            break;
+        }
+        case 2: { // add on seg
+            std::size_t vert_lo = vert_distribution(generator);
+            std::size_t vert_hi = vert_distribution(generator);
+            int32_t val = val_distribution(generator);
+            if (vert_hi < vert_lo) {
+                std::swap(vert_hi, vert_lo);
+            }
+            for (std::size_t i = vert_lo; i <= vert_hi; ++i) {
+                data[i] += val;
+            }
+
+            if (vert_hi < 99) {
+                lc.link_cut_cut(vert_hi);
+            }
+
+            lc.link_cut_add_on_path(vert_lo, val);
+
+            if (vert_hi < 99) {
+                lc.link_cut_link(vert_hi, vert_hi + 1);
+            }
+            break;
+        }
+        case 3: { // get
+            std::size_t vert = vert_distribution(generator);
+
+            CHECK_EQ(data[vert], lc.link_cut_get(vert));
+            break;
+        }
+        case 4: { // get min on seg
+            std::size_t vert_lo = vert_distribution(generator);
+            std::size_t vert_hi = vert_distribution(generator);
+
+            if (vert_lo > vert_hi) {
+                std::swap(vert_lo, vert_hi);
+            }
+
+            int32_t res = *std::min_element(data.begin() + vert_lo, data.begin() + vert_hi + 1);
+
+            if (vert_hi < 99) {
+                lc.link_cut_cut(vert_hi);
+            }
+
+            CHECK_EQ(res, lc.link_cut_get_min_on_path(vert_lo).second);
+
+            if (vert_hi < 99) {
+                lc.link_cut_link(vert_hi, vert_hi + 1);
+            }
+            break;
+        }
         }
     }
 }
