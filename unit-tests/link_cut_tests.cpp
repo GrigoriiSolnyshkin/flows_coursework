@@ -332,7 +332,7 @@ TEST_CASE("test ops random path test with add") {
         std::size_t argmin_entry = lo;
 
         for (int hi = lo; hi < 1000; ++hi) {
-            if (data[hi] < min_entry) {
+            if (data[hi] <= min_entry) {
                 min_entry = data[hi];
                 argmin_entry = hi;
             }
@@ -373,7 +373,7 @@ TEST_CASE("test ops random path test with set") {
         std::size_t argmin_entry = hi;
 
         for (int lo = hi; lo >= 0; --lo) {
-            if (data[lo] < min_entry) {
+            if (data[lo] <= min_entry) {
                 min_entry = data[lo];
                 argmin_entry = lo;
             }

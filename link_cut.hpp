@@ -81,11 +81,11 @@ class link_cut {
 
             subtree_min_t subtree_min = {node, nodes_m[node].data};
 
-            if (left_subtree_min.node && left_subtree_min.result <= subtree_min.result) {
+            if (left_subtree_min.node && left_subtree_min.result < subtree_min.result) {
                 subtree_min = left_subtree_min;
             }
 
-            if (right_subtree_min.node && right_subtree_min.result < subtree_min.result) {
+            if (right_subtree_min.node && right_subtree_min.result <= subtree_min.result) {
                 subtree_min = right_subtree_min;
             }
 
