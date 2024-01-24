@@ -134,7 +134,6 @@ inline std::vector<capacity_edge<int64_t>> akc_test(int n) {
         data.emplace_back(i + 1, i + 2, n + 1);
     }
 
-
     int d = 2 * n + 4;
 
     for (int i = d - 1; i <= 2 * n + d - 1; ++i) {
@@ -144,7 +143,6 @@ inline std::vector<capacity_edge<int64_t>> akc_test(int n) {
     for (int i = 0; i < n; ++i) {
         data.emplace_back(i + d, 2 * n + 1 - i + d, 1);
     }
-
 
     data.emplace_back(0, 2, 1000000);
     data.emplace_back(0, d, 1000000);

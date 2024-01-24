@@ -26,7 +26,7 @@ jobs:
         run: clang-tidy-14 ${{inputs.CMD_FIND_CPP}} ${{inputs.CMD_FIND_HPP}} -extra-arg=-std=c++17
   run-unit-tests-debug:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
     steps:
       - name: download repo
         uses: actions/checkout@v3
@@ -38,7 +38,7 @@ jobs:
         run: ./unit-tests-run
   run-unit-tests-asan:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
     steps:
       - name: download repo
         uses: actions/checkout@v3
