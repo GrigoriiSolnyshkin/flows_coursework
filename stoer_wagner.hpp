@@ -2,11 +2,11 @@
 #ifndef FLOWS_COURSEWORK_STOER_WAGNER_HPP
 #define FLOWS_COURSEWORK_STOER_WAGNER_HPP
 
-#include <vector>
-#include <numeric>
+#include "dinics_solvers.hpp"
 #include <limits>
+#include <numeric>
 #include <queue>
-#include "interfaces.hpp"
+#include <vector>
 
 namespace flows_coursework {
 
@@ -41,14 +41,14 @@ class stoer_wagner_mincut_solver {
 
     void mark_descendants(vertex_t u) {
         result_m[u] = true;
-        for (auto v: descendants_m[u]) {
+        for (auto v : descendants_m[u]) {
             mark_descendants(v);
         }
     }
 
   public:
     [[nodiscard]] std::vector<bool> find_mincut(std::size_t n_vertices,
-                                  const std::vector<capacity_edge<DataType>> &edges) {
+                                                const std::vector<capacity_edge<DataType>> &edges) {
         edges_m = edges;
         graph_m.resize(n_vertices);
         descendants_m.resize(n_vertices);
@@ -76,7 +76,7 @@ class stoer_wagner_mincut_solver {
 
             std::size_t last_chosen;
 
-            for (std::size_t op = n_vertices - phase; op--; ) {
+            for (std::size_t op = n_vertices - phase; op--;) {
                 while (chosen[queue_weights.top().second]) {
                     queue_weights.pop();
                 }
@@ -84,7 +84,7 @@ class stoer_wagner_mincut_solver {
                 DataType current_mincut = queue_weights.top().first;
                 chosen[current] = true;
 
-                for (edge_index_t edge_index: graph_m[current]) {
+                for (edge_index_t edge_index : graph_m[current]) {
                     auto other = edges_m[edge_index].to + edges_m[edge_index].from - current;
                     if (!chosen[other]) {
                         weights[other] += edges_m[edge_index].capacity;
@@ -110,22 +110,45 @@ class stoer_wagner_mincut_solver {
     }
 };
 
-template<typename DataType>
-DataType cut_size(const std::vector<capacity_edge<DataType>> &edges,
-                  const std::vector<bool> &cut) {
+template <typename DataType>
+DataType cut_size(const std::vector<capacity_edge<DataType>> &edges, const std::vector<bool> &cut) {
 
     DataType res{};
-    for (const auto &edge: edges) {
+    for (const auto &edge : edges) {
         if (cut[edge.to] ^ cut[edge.from]) {
             res += edge.capacity;
         }
     }
     return res;
 }
+
+template <typename T>
+T global_mincut_size_wagner(std::size_t n, const std::vector<capacity_edge<T>> &data) {
+    return cut_size(data, stoer_wagner_mincut_solver<T>().find_mincut(n, data));
 }
 
+template <typename T>
+T global_mincut_size_dinics(std::size_t n, const std::vector<capacity_edge<T>> &data) {
+    T ans = std::numeric_limits<T>::max();
 
+    auto data_copy = data;
+    for (const auto &edge : data) {
+        data_copy.emplace_back(edge.to, edge.from, edge.capacity);
+    }
+
+    for (std::size_t s = 0; s < n; ++s) {
+        for (std::size_t t = 0; t < s; ++t) {
+            ans = std::min(ans,
+                           flows_utils::flow_size(
+                               s, data_copy,
+                               dinics_solvers::basic_dinics_solver<T>().solve(n, s, t, data_copy)));
+        }
+    }
+    return ans;
 }
 
+} // namespace undirected_cuts
+
+} // namespace flows_coursework
 
 #endif // FLOWS_COURSEWORK_STOER_WAGNER_HPP

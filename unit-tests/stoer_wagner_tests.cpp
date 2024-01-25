@@ -1,42 +1,18 @@
+#include <cstdint>
 #include <doctest.h>
 #include <random>
 #include <vector>
-#include <cstdint>
 
-#include "../dinics_solvers.hpp"
 #include "../stoer_wagner.hpp"
 
 using flows_coursework::capacity_edge;
-using flows_coursework::undirected_cuts::cut_size;
-using flows_coursework::undirected_cuts::stoer_wagner_mincut_solver;
-using flows_coursework::dinics_solvers::basic_dinics_solver;
 using flows_coursework::flows_utils::flow_size;
+using flows_coursework::undirected_cuts::cut_size;
+using flows_coursework::undirected_cuts::global_mincut_size_dinics;
+using flows_coursework::undirected_cuts::global_mincut_size_wagner;
+using flows_coursework::undirected_cuts::stoer_wagner_mincut_solver;
 
-static std::mt19937 generator{21}; //NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-
-template <typename T>
-T global_mincut_size_wagner(std::size_t n, const std::vector<capacity_edge<T>> &data) {
-    return cut_size(data, stoer_wagner_mincut_solver<T>().find_mincut(
-                       n, data));
-}
-
-template <typename T>
-T global_mincut_size_dinics(std::size_t n, const std::vector<capacity_edge<T>> &data) {
-    T ans = std::numeric_limits<T>::max();
-
-    auto data_copy = data;
-    for (const auto &edge: data) {
-        data_copy.emplace_back(edge.to, edge.from, edge.capacity);
-    }
-
-    for (std::size_t s = 0; s < n; ++s) {
-        for (std::size_t t = 0; t < s; ++t) {
-            ans = std::min(ans, flow_size(s, data_copy, basic_dinics_solver<T>().solve(
-                                                            n, s, t, data_copy)));
-        }
-    }
-    return ans;
-}
+static std::mt19937 generator{21}; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 TEST_CASE("cycle") {
     int n = 100;
@@ -47,6 +23,17 @@ TEST_CASE("cycle") {
     }
 
     CHECK_EQ(2, global_mincut_size_wagner(n, data));
+}
+
+TEST_CASE("cycle-2") {
+    std::vector<capacity_edge<int>> data{
+        {0, 1, 1},
+        {1, 2, 2},
+        {2, 3, 1},
+        {3, 0, 2}
+    };
+
+    CHECK_EQ(2, global_mincut_size_wagner(4, data));
 }
 
 TEST_CASE("two clicks") {
@@ -80,8 +67,7 @@ TEST_CASE("stress with dinics") {
         std::vector<capacity_edge<int64_t>> data;
         for (int j = 0; j < n; ++j) {
             for (int i = 0; i < j; ++i) {
-                data.emplace_back(i, j,
-                                  std::uniform_int_distribution<int64_t>(0, 99)(generator));
+                data.emplace_back(i, j, std::uniform_int_distribution<int64_t>(0, 99)(generator));
             }
         }
 
