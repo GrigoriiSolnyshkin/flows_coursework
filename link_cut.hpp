@@ -81,11 +81,11 @@ class link_cut {
 
             subtree_min_t subtree_min = {node, nodes_m[node].data};
 
-            if (left_subtree_min.node && left_subtree_min.result <= subtree_min.result) {
+            if (left_subtree_min.node && left_subtree_min.result < subtree_min.result) {
                 subtree_min = left_subtree_min;
             }
 
-            if (right_subtree_min.node && right_subtree_min.result < subtree_min.result) {
+            if (right_subtree_min.node && right_subtree_min.result <= subtree_min.result) {
                 subtree_min = right_subtree_min;
             }
 
@@ -225,6 +225,9 @@ class link_cut {
     explicit link_cut(std::size_t n_vertices) : nodes_m(n_vertices + 1) {
         init();
     }
+    link_cut() : nodes_m(1) {
+        init();
+    }
 
     [[nodiscard]] std::size_t size() const {
         return nodes_m.size() - 1;
@@ -236,6 +239,11 @@ class link_cut {
         for (vertex_t i = 1; i < nodes_m.size(); ++i) {
             nodes_m[i].subtree_min.node = i;
         }
+    }
+
+    void reinit(std::size_t n_vertices) {
+        nodes_m.resize(n_vertices + 1);
+        init();
     }
 
     void link_cut_cut(vertex_t node) {
@@ -271,15 +279,17 @@ class link_cut {
     }
 
     void link_cut_add(vertex_t node, DataType data) {
-        expose(++node);
-        splay(node);
-        nodes_m[node].lazy_data += data;
-        if (vertex_t left = get_child<LEFT>(node)) {
-            nodes_m[left].lazy_data -= data;
-        }
-        if (vertex_t right = get_child<RIGHT>(node)) {
-            nodes_m[right].lazy_data -= data;
-        }
+        splay(++node);
+        lazy_update(node);
+        nodes_m[node].data += data;
+        update(node);
+    }
+
+    void link_cut_set(vertex_t node, DataType data) {
+        splay(++node);
+        lazy_update(node);
+        nodes_m[node].data = data;
+        update(node);
     }
 
     void link_cut_add_on_path(vertex_t node, DataType data) {
